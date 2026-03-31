@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Terminal, Activity, MousePointer2, ChevronRight, Server, CheckCircle2, Lock, GitBranch } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Terminal, MousePointer2, ChevronRight, Server, CheckCircle2 } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -13,25 +14,25 @@ const MagneticButton = ({ children, className = '', primary = false, ...props }:
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!buttonRef.current) return;
     const { left, top, width, height } = buttonRef.current.getBoundingClientRect();
-    const x = (e.clientX - left - width / 2) * 0.15;
-    const y = (e.clientY - top - height / 2) * 0.15;
+    const x = (e.clientX - left - width / 2) * 0.04;
+    const y = (e.clientY - top - height / 2) * 0.04;
     gsap.to(buttonRef.current, { x, y, duration: 0.3, ease: 'power2.out' });
   };
 
   const handleMouseLeave = () => {
     if (!buttonRef.current) return;
-    gsap.to(buttonRef.current, { x: 0, y: 0, scale: 1, duration: 0.5, ease: 'elastic.out(1, 0.3)' });
+    gsap.to(buttonRef.current, { x: 0, y: 0, scale: 1, duration: 0.5, ease: 'power2.out' });
   };
 
   const handleMouseEnter = () => {
     if (!buttonRef.current) return;
-    gsap.to(buttonRef.current, { scale: 1.03, duration: 0.3, ease: 'power2.out' });
+    gsap.to(buttonRef.current, { scale: 1.01, duration: 0.3, ease: 'power2.out' });
   };
 
-  const baseStyle = "relative overflow-hidden rounded-full font-mono text-xs uppercase tracking-wider px-6 py-3 transition-colors";
+  const baseStyle = "relative overflow-hidden rounded-xl font-medium text-[13px] md:text-sm px-6 py-2.5 transition-all outline-none focus-visible:ring-2 focus-visible:ring-accent/50";
   const colorStyle = primary 
-    ? "bg-text text-background font-bold" 
-    : "bg-surface border border-border text-text hover:text-accent";
+    ? "bg-text text-background font-semibold shadow-sm hover:scale-[1.01] hover:brightness-110" 
+    : "bg-transparent border border-white/10 text-text/80 hover:bg-white/5 hover:text-text";
 
   return (
     <button
@@ -42,7 +43,6 @@ const MagneticButton = ({ children, className = '', primary = false, ...props }:
       className={`${baseStyle} ${colorStyle} ${className} group`}
       {...props}
     >
-      <span className="absolute inset-0 w-full h-full bg-accent/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-[cubic-bezier(0.25,0.46,0.45,0.94)]"></span>
       <span className="relative z-10 flex items-center justify-center gap-2">{children}</span>
     </button>
   );
@@ -67,17 +67,16 @@ const Navbar = () => {
   return (
     <nav 
       ref={navRef} 
-      className="fixed top-6 left-1/2 -translate-x-1/2 z-40 w-[90%] max-w-5xl rounded-[2rem] px-6 py-4 flex items-center justify-between transition-all duration-500 border border-transparent [&.nav-scrolled]:bg-background/70 [&.nav-scrolled]:backdrop-blur-xl [&.nav-scrolled]:border-border [&.nav-scrolled]:shadow-2xl"
+      className="fixed top-6 left-1/2 -translate-x-1/2 z-40 w-[90%] max-w-5xl rounded-[1.5rem] px-4 md:px-5 py-2 flex items-center justify-between transition-all duration-500 border border-transparent [&.nav-scrolled]:bg-[#0A0A0F]/60 [&.nav-scrolled]:backdrop-blur-2xl [&.nav-scrolled]:border-white/5 [&.nav-scrolled]:shadow-[0_10px_40px_rgba(0,0,0,0.2)]"
     >
-      <div className="flex items-center gap-3 font-sans font-bold text-lg tracking-tight">
-        <Terminal className="w-5 h-5 text-accent" />
-        <span>Cloude<span className="text-border mx-1">/</span>Remote</span>
+      <div className="flex items-center gap-2 font-sans font-semibold text-base tracking-tight">
+        <Terminal className="w-4 h-4 text-accent" strokeWidth={2.5} />
+        <span className="translate-y-[0.5px]">Cloude<span className="text-white/20 mx-1">/</span>Remote</span>
       </div>
-      <div className="hidden md:flex items-center gap-8 font-mono text-xs uppercase tracking-widest text-text/60">
-        <a href="#features" className="hover:text-text transition-colors hover:-translate-y-[1px]">Features</a>
-        <a href="#protocol" className="hover:text-text transition-colors hover:-translate-y-[1px]">Protocol</a>
+      <div className="hidden md:flex items-center gap-6 font-sans text-[13px] font-medium tracking-wide text-text/70 translate-y-[0.5px]">
+        <a href="#features" className="hover:text-text transition-all duration-300 transform hover:-translate-y-[1px]">Features</a>
       </div>
-      <MagneticButton primary>Get early access</MagneticButton>
+      <MagneticButton primary className="!px-4 !py-1.5 !text-[13px] !rounded-xl !tracking-wide">Get early access</MagneticButton>
     </nav>
   );
 };
@@ -88,66 +87,61 @@ const Hero = () => {
   useEffect(() => {
     const ctx = gsap.context(() => {
       gsap.from('.hero-elem', {
-        y: 40,
+        y: 15,
         opacity: 0,
-        duration: 1.2,
-        stagger: 0.15,
-        ease: 'power3.out',
-        delay: 0.2
+        duration: 0.8,
+        stagger: 0.1,
+        ease: 'power2.out',
+        delay: 0.1
       });
     }, containerRef);
     return () => ctx.revert();
   }, []);
 
   return (
-    <section ref={containerRef} className="relative h-[100dvh] w-full flex items-end pb-24 px-6 md:px-16 overflow-hidden">
-      {/* Background Image & Gradient */}
-      <div className="absolute inset-0 z-0">
-        <img 
-          src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80" 
-          alt="Server infrastructure"
-          className="w-full h-full object-cover opacity-30 grayscale mix-blend-luminosity"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
-      </div>
-
-      <div className="relative z-10 max-w-6xl w-full flex flex-col items-start gap-6">
-        <div className="hero-elem inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-accent border border-accent/30 rounded-full px-4 py-1.5 bg-accent/5 backdrop-blur-md">
-          <Activity className="w-3 h-3" /> System Online — Agent Ready
+    <section ref={containerRef} className="relative min-h-[100dvh] w-full flex items-center justify-center pt-32 pb-24 px-6 md:px-16">
+      <div className="relative z-10 max-w-4xl mx-auto w-full flex flex-col items-center text-center gap-6 md:gap-8">
+        {/* System Status Badge */}
+        <div className="hero-elem relative inline-flex rounded-full p-[1px] overflow-hidden bg-white/15 shadow-[0_0_20px_rgba(255,255,255,0.01)]">
+          {/* Light Sweep (the boundary stroke highlight) */}
+          <div className="absolute inset-0 w-[200%] h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-[100%]" 
+               style={{ animation: 'sweep 5s ease-in-out infinite 2s' }} />
+          
+          {/* Inner Badge Surface */}
+          <div className="relative z-10 flex items-center justify-center gap-[10px] font-mono text-[9.5px] md:text-[10px] font-medium uppercase tracking-[0.28em] text-accent/90 px-[14px] py-[5px] bg-[#0a0a0f] rounded-full">
+            {/* Heartbeat Dot */}
+            <div className="relative flex items-center justify-center w-[5px] h-[5px]">
+              <div className="absolute w-full h-full rounded-full bg-accent" style={{ animation: 'system-breathe 2.4s ease-in-out infinite' }} />
+              {/* Ghost Ring */}
+              <div className="absolute w-full h-full rounded-full border-[0.5px] border-accent" style={{ animation: 'system-ghost 2.4s cubic-bezier(0.2, 0, 0.4, 1) infinite' }} />
+            </div>
+            <span className="translate-y-[0.5px] opacity-90">ALWAYS RUNNING</span>
+          </div>
         </div>
         
-        <h1 className="hero-elem flex flex-col gap-2">
-          <span className="font-sans font-bold text-2xl md:text-4xl tracking-tight text-text/80 uppercase">Your AI engineer.</span>
-          <span className="font-drama italic text-6xl md:text-8xl lg:text-9xl tracking-tighter leading-none text-text">Always running.</span>
+        <h1 className="hero-elem max-w-3xl">
+          <span className="font-sans font-bold text-4xl sm:text-5xl md:text-[3.5rem] tracking-tight text-text leading-[1.1] md:leading-[1.1]">
+            Code from your phone.
+          </span>
         </h1>
         
-        <div className="hero-elem font-mono text-sm md:text-base text-text/60 max-w-xl mt-4 border-l border-border pl-4 flex flex-col gap-2">
-          <p>Run your XYZ in the cloud and control it from anywhere.</p>
+        <div className="hero-elem font-medium text-sm md:text-[17px] text-text/50 max-w-xl flex flex-col gap-2">
+          <p>Control your coding agents from anywhere.</p>
         </div>
         
-        <div className="hero-elem flex flex-wrap gap-4 md:gap-8 mt-8 font-sans font-medium text-xl md:text-2xl tracking-tight">
-          <span className="text-text/80">No laptop.</span>
-          <span className="text-text/80">No setup.</span>
-          <span className="text-accent font-bold">Just ship.</span>
+        <div className="hero-elem flex flex-wrap items-center justify-center gap-2 md:gap-3 mt-2 md:mt-4 font-medium text-sm md:text-[15px] tracking-wide text-text/40">
+          <span>No laptop.</span>
+          <span className="opacity-40 select-none">•</span>
+          <span>No setup.</span>
+          <span className="opacity-40 select-none">•</span>
+          <span className="text-text/90 font-medium">Just ship.</span>
         </div>
 
-        <div className="hero-elem mt-8 flex sm:flex-row flex-col gap-4">
-          <MagneticButton primary className="px-8 py-4 text-sm scale-105">{">_ Join the waitlist"}</MagneticButton>
-          <MagneticButton className="px-8 py-4 text-sm"><ChevronRight className="w-4 h-4"/> Read the Docs</MagneticButton>
-        </div>
-      </div>
-      
-      {/* Abstract Code Snippet Decoration */}
-      <div className="hero-elem absolute top-1/4 right-10 hidden lg:block font-mono text-xs text-text/20 leading-relaxed max-w-xs text-right opacity-40">
-        <div><span className="text-accent/50">const</span> instance = <span className="text-accent/50">new</span> Agent();</div>
-        <div>await instance.connect(&#123; mode: <span className="text-text/50">'hybrid'</span> &#125;);</div>
-        <div>instance.execute(&#123;</div>
-        <div>&nbsp;&nbsp;task: <span className="text-text/50">'refactor_core'</span>,</div>
-        <div>&nbsp;&nbsp;sync: <span className="text-accent/50">false</span></div>
-        <div>&#125;);</div>
-        <div className="mt-4 border-t border-border/50 pt-2 flex items-center justify-end gap-2">
-          <span className="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
-          Running background process
+        <div className="hero-elem mt-6 md:mt-10 flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-center justify-center">
+          <MagneticButton primary className="w-full sm:w-auto">Join the waitlist</MagneticButton>
+          <MagneticButton className="w-full sm:w-auto group">
+            <span className="opacity-80 group-hover:opacity-100 transition-opacity flex items-center gap-2">View on GitHub <ChevronRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5"/></span>
+          </MagneticButton>
         </div>
       </div>
     </section>
@@ -174,7 +168,7 @@ const DiagnosticShufflerCard = () => {
   }, []);
 
   return (
-    <div className="bg-surface border border-border p-8 rounded-[2rem] shadow-2xl flex flex-col overflow-hidden h-80 relative group hover:-translate-y-1 transition-transform duration-500">
+    <div className="bg-white/[0.02] border border-white/5 shadow-sm p-8 rounded-[2rem] flex flex-col overflow-hidden h-80 relative group hover:-translate-y-1 transition-transform duration-500">
       <h3 className="font-sans font-bold text-xl mb-2 flex items-center justify-between">
         Always-on Execution <Server className="w-5 h-5 text-text/40"/>
       </h3>
@@ -184,7 +178,7 @@ const DiagnosticShufflerCard = () => {
         {cards.map((card, i) => (
           <div 
             key={card.id}
-            className="absolute left-0 right-0 bg-background border border-border p-4 rounded-xl flex items-center justify-between transition-all duration-[800ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+            className="absolute left-0 right-0 bg-black/40 border border-white/5 backdrop-blur-md p-4 rounded-xl flex items-center justify-between transition-all duration-[800ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]"
             style={{ 
               top: `${i * 24}px`, 
               scale: 1 - (i * 0.05),
@@ -235,7 +229,7 @@ const TelemetryTypewriterCard = () => {
   }, [msgIdx]);
 
   return (
-    <div className="bg-surface border border-border p-8 rounded-[2rem] shadow-2xl flex flex-col h-80 relative hover:-translate-y-1 transition-transform duration-500">
+    <div className="bg-white/[0.02] border border-white/5 shadow-sm p-8 rounded-[2rem] flex flex-col h-80 relative hover:-translate-y-1 transition-transform duration-500">
       <div className="flex justify-between items-center mb-8">
         <h3 className="font-sans font-bold text-xl">Remote Command <span className="font-normal text-text/40">Layer</span></h3>
         <div className="flex gap-2">
@@ -246,7 +240,7 @@ const TelemetryTypewriterCard = () => {
       </div>
       <p className="font-mono text-xs text-text/50 mb-6">Control, monitor, and interact from anywhere.</p>
       
-      <div className="flex-1 bg-background rounded-xl p-4 font-mono text-xs border border-border/50 text-accent/80 flex flex-col justify-end">
+      <div className="flex-1 bg-black/40 backdrop-blur-md rounded-xl p-4 font-mono text-xs border border-white/5 text-accent/80 flex flex-col justify-end">
         <div>
           <span className="text-text/70">$ cloude logs stream</span>
           <br/><br/>
@@ -278,20 +272,20 @@ const CursorProtocolSchedulerCard = () => {
   }, []);
 
   return (
-    <div ref={containerRef} className="bg-surface border border-border p-8 rounded-[2rem] shadow-2xl flex flex-col h-80 relative hover:-translate-y-1 transition-transform duration-500 overflow-hidden">
+    <div ref={containerRef} className="bg-white/[0.02] border border-white/5 shadow-sm p-8 rounded-[2rem] flex flex-col h-80 relative hover:-translate-y-1 transition-transform duration-500 overflow-hidden">
       <h3 className="font-sans font-bold text-xl mb-2">Asynchronous <span className="text-accent underline decoration-accent/30 underline-offset-4">Output</span></h3>
       <p className="font-mono text-xs text-text/50 mb-8">Launch tasks. Return to completed code and commits.</p>
       
       <div className="flex-1 relative">
         <div className="grid grid-cols-2 gap-3 h-full pb-4">
-          <div className="border border-border rounded-xl p-3 flex flex-col justify-between">
+          <div className="border border-white/5 bg-black/20 rounded-xl p-3 flex flex-col justify-between">
             <span className="font-mono text-[10px] text-text/40">Task Queue</span>
             <div className="space-y-2">
-              <div className="h-1.5 w-full bg-border rounded-full"></div>
-              <div className="h-1.5 w-2/3 bg-border rounded-full"></div>
+              <div className="h-1.5 w-full bg-white/10 rounded-full"></div>
+              <div className="h-1.5 w-2/3 bg-white/10 rounded-full"></div>
             </div>
           </div>
-          <div ref={targetRef} className="border border-border rounded-xl p-3 flex flex-col justify-between transition-colors">
+          <div ref={targetRef} className="border border-white/5 bg-black/20 rounded-xl p-3 flex flex-col justify-between transition-colors">
             <span className="font-mono text-[10px] opacity-60">Result Output</span>
             <div className="flex justify-end"><CheckCircle2 className="w-4 h-4" /></div>
           </div>
@@ -348,16 +342,7 @@ const Philosophy = () => {
   const text4 = "cloud permanence.".split(" ");
 
   return (
-    <section ref={containerRef} className="relative py-40 px-6 md:px-16 flex items-center bg-black overflow-hidden border-y border-border">
-      <div className="absolute inset-0 z-0">
-        <img 
-          src="https://images.unsplash.com/photo-1614729939124-032f0b56c9ce?auto=format&fit=crop&q=80" 
-          className="w-full h-full object-cover opacity-20 grayscale"
-          alt="Abstract dark architecture"
-        />
-        <div className="absolute inset-0 bg-background/80" />
-      </div>
-      
+    <section ref={containerRef} className="relative py-40 px-6 md:px-16 flex items-center">
       <div className="relative z-10 max-w-5xl mx-auto w-full">
         <div className="mb-12 font-sans font-medium text-lg md:text-2xl text-text/50 max-w-3xl leading-relaxed">
           {text1.map((w, i) => <span key={i} className="phil-word inline-block mr-2">{w}</span>)}
@@ -375,84 +360,12 @@ const Philosophy = () => {
   );
 };
 
-const ProtocolStacking = () => {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  
-  useEffect(() => {
-    const ctx = gsap.context(() => {
-      const cards = gsap.utils.toArray('.stack-card');
-      
-      cards.forEach((card: any) => {
-        ScrollTrigger.create({
-          trigger: card,
-          start: 'top top+=100',
-          endTrigger: sectionRef.current,
-          end: 'bottom bottom',
-          pin: true,
-          pinSpacing: false,
-          animation: gsap.to(card, {
-            scale: 0.9,
-            opacity: 0.5,
-            filter: 'blur(10px)',
-            ease: "none"
-          }),
-          scrub: true,
-        });
-      });
-    }, sectionRef);
-    
-    return () => ctx.revert();
-  }, []);
-
-  const steps = [
-    {
-      num: "01",
-      title: "Secure Terminal Handshake",
-      desc: "Authenticate via SSH to your dedicated cloud instance.",
-      icon: <Lock className="w-12 h-12 text-accent" strokeWidth={1} />
-    },
-    {
-      num: "02",
-      title: "Agent Deployment",
-      desc: "Inject Claude Code natively into the cloned repository.",
-      icon: <Terminal className="w-12 h-12 text-accent" strokeWidth={1} />
-    },
-    {
-      num: "03",
-      title: "Asynchronous Commit Pipeline",
-      desc: "Agent pushes verified changes while you sleep.",
-      icon: <GitBranch className="w-12 h-12 text-accent" strokeWidth={1} />
-    }
-  ];
-
-  return (
-    <section id="protocol" ref={sectionRef} className="py-24 px-6 md:px-16 min-h-[300vh] relative">
-      <div className="max-w-4xl mx-auto h-full space-y-[80vh] pt-10">
-        {steps.map((step) => (
-          <div key={step.num} className="stack-card bg-surface border border-border rounded-[3rem] p-12 md:p-20 shadow-2xl h-[65vh] flex flex-col justify-between relative overflow-hidden origin-top">
-            <div className="absolute -top-24 -right-24 w-96 h-96 bg-accent/5 rounded-full blur-3xl rounded-tl-none"></div>
-            
-            <div className="flex justify-between items-start z-10">
-              <span className="font-mono text-4xl text-text/20 font-bold">{step.num}</span>
-              {step.icon}
-            </div>
-            
-            <div className="z-10">
-              <h3 className="font-sans font-bold text-3xl md:text-5xl mb-4 tracking-tight">{step.title}</h3>
-              <p className="font-mono text-sm md:text-base text-text/60 max-w-sm border-l-2 border-accent pl-4">
-                {step.desc}
-              </p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-};
-
 const Footer = () => {
   return (
-    <footer className="bg-black pt-32 pb-10 px-6 md:px-16 rounded-t-[4rem] border-t border-border mt-32 relative z-20">
+    <footer className="relative z-20 pb-20 px-6 md:px-16 pt-32">
+      {/* Thin Horizontal Line Separator */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[1px] bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+
       <div className="max-w-7xl mx-auto flex flex-col items-center mb-32 text-center">
         <h2 className="font-drama italic text-6xl md:text-8xl mb-8">Execute anywhere.</h2>
         <MagneticButton primary className="px-12 py-6 text-lg tracking-widest scale-110">Get early access</MagneticButton>
@@ -475,8 +388,8 @@ const Footer = () => {
         </div>
         
         <div className="flex flex-col gap-4 font-mono text-xs text-text/60">
-          <h4 className="font-sans font-bold text-text uppercase tracking-widest text-sm mb-2">Protocol</h4>
-          <a href="#" className="hover:text-accent transition-colors">Documentation</a>
+          <h4 className="font-sans font-bold text-text uppercase tracking-widest text-sm mb-2">Platform</h4>
+          <a href="#features" className="hover:text-accent transition-colors">Features</a>
           <a href="#" className="hover:text-accent transition-colors">Integrations</a>
           <a href="#" className="hover:text-accent transition-colors">Instances</a>
         </div>
@@ -492,16 +405,81 @@ const Footer = () => {
   );
 };
 
+const GlobalBackgroundPaths = () => {
+  const paths = Array.from({ length: 12 }, (_, i) => {
+    // Generate graceful sweeping curves that flow from top (y=0) to bottom (y=100) exactly
+    const startX = -10 + i * 10;
+    const midX1 = startX + 40; 
+    const midX2 = startX - 40; 
+    const endX = startX + 20;
+
+    return {
+      id: i,
+      d: `M${startX} 0 C${midX1} 33, ${midX2} 66, ${endX} 100`,
+    };
+  });
+
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-100 mix-blend-normal">
+      <svg
+        className="w-full h-full text-accent"
+        viewBox="0 0 100 100"
+        fill="none"
+        preserveAspectRatio="none"
+      >
+        <title>Global Background Paths</title>
+        {paths.map((path) => (
+          <motion.path
+            key={path.id}
+            d={path.d}
+            stroke="currentColor"
+            strokeWidth={1}
+            vectorEffect="non-scaling-stroke"
+            strokeOpacity={1}
+            initial={{ pathLength: 0.1, opacity: 1 }}
+            animate={{
+              pathLength: 1,
+              pathOffset: [0, 1, 0],
+            }}
+            transition={{
+              duration: 20 + path.id * 2,
+              repeat: Number.POSITIVE_INFINITY,
+              ease: "linear",
+            }}
+          />
+        ))}
+      </svg>
+    </div>
+  );
+}
+
 function App() {
   return (
-    <div className="relative w-full">
-      <div className="noise-overlay"></div>
-      <Navbar />
-      <Hero />
-      <Features />
-      <Philosophy />
-      <ProtocolStacking />
-      <Footer />
+    <div className="relative w-full min-h-[100dvh] bg-[#0A0A0F] text-text selection:bg-accent/30 selection:text-white overflow-x-hidden">
+      {/* Fixed Ambient Light Base */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0D0D12] via-[#0A0A0F] to-[#0D0D12] z-0" />
+        <div className="absolute z-10 top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-accent/[0.015] blur-[120px]" />
+        <div className="absolute z-10 top-[40%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-accent/[0.01] blur-[120px]" />
+        <div className="absolute z-10 bottom-[-10%] left-[20%] w-[60vw] h-[60vw] rounded-full bg-accent/[0.015] blur-[150px]" />
+      </div>
+
+      {/* Scrolling Vector Canvas */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <GlobalBackgroundPaths />
+      </div>
+
+      {/* Global Noise Overlay */}
+      <div className="noise-overlay fixed inset-0 z-10 pointer-events-none mix-blend-overlay opacity-[0.03]"></div>
+
+      {/* Content Layer */}
+      <div className="relative z-20">
+        <Navbar />
+        <Hero />
+        <Features />
+        <Philosophy />
+        <Footer />
+      </div>
     </div>
   );
 }

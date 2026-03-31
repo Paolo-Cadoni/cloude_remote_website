@@ -5,9 +5,77 @@
 @tailwind utilities;
 
 @layer base {
+  /* 
+    IMPORTANT: Local Font Installation
+    Please download the RF Rostin font family matching these weights (Regular, Medium, SemiBold, Bold) 
+    and save the files into the `public/fonts` directory to fully activate the premium typographic styling.
+  */
+  @font-face {
+    font-family: 'RF Rostin';
+    src: url('/fonts/RFRostin-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'RF Rostin';
+    src: url('/fonts/RFRostin-Medium.woff2') format('woff2');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'RF Rostin';
+    src: url('/fonts/RFRostin-SemiBold.woff2') format('woff2');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'RF Rostin';
+    src: url('/fonts/RFRostin-Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+  }
+
   body {
-    @apply bg-background text-text font-sans antialiased overflow-x-hidden;
+    @apply bg-background text-text antialiased overflow-x-hidden;
     background-color: #0D0D12; /* Fallback */
+    font-family: 'RF Rostin', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+}
+
+@keyframes system-breathe {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.7;
+    box-shadow: 0 0 2px rgba(201, 168, 76, 0.2);
+  }
+  50% {
+    transform: scale(1.35);
+    opacity: 1;
+    box-shadow: 0 0 6px rgba(201, 168, 76, 0.5);
+  }
+}
+
+@keyframes system-ghost {
+  0% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(3);
+    opacity: 0;
+  }
+}
+
+@keyframes sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  40%, 100% {
+    transform: translateX(100%);
   }
 }
 
