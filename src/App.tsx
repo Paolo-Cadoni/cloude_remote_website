@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { motion } from 'framer-motion';
 import { Terminal, MousePointer2, ChevronRight, Server, CheckCircle2 } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -405,68 +404,16 @@ const Footer = () => {
   );
 };
 
-const GlobalBackgroundPaths = () => {
-  const paths = Array.from({ length: 12 }, (_, i) => {
-    // Generate graceful sweeping curves that flow from top (y=0) to bottom (y=100) exactly
-    const startX = -10 + i * 10;
-    const midX1 = startX + 40; 
-    const midX2 = startX - 40; 
-    const endX = startX + 20;
-
-    return {
-      id: i,
-      d: `M${startX} 0 C${midX1} 33, ${midX2} 66, ${endX} 100`,
-    };
-  });
-
-  return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-100 mix-blend-normal">
-      <svg
-        className="w-full h-full text-accent"
-        viewBox="0 0 100 100"
-        fill="none"
-        preserveAspectRatio="none"
-      >
-        <title>Global Background Paths</title>
-        {paths.map((path) => (
-          <motion.path
-            key={path.id}
-            d={path.d}
-            stroke="currentColor"
-            strokeWidth={1}
-            vectorEffect="non-scaling-stroke"
-            strokeOpacity={1}
-            initial={{ pathLength: 0.1, opacity: 1 }}
-            animate={{
-              pathLength: 1,
-              pathOffset: [0, 1, 0],
-            }}
-            transition={{
-              duration: 20 + path.id * 2,
-              repeat: Number.POSITIVE_INFINITY,
-              ease: "linear",
-            }}
-          />
-        ))}
-      </svg>
-    </div>
-  );
-}
-
 function App() {
   return (
-    <div className="relative w-full min-h-[100dvh] bg-[#0A0A0F] text-text selection:bg-accent/30 selection:text-white overflow-x-hidden">
-      {/* Fixed Ambient Light Base */}
+    <div className="relative w-full min-h-screen bg-[#0A0A0F] text-text selection:bg-accent/30 selection:text-white">
+      {/* Global Background Layer */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0D0D12] via-[#0A0A0F] to-[#0D0D12] z-0" />
-        <div className="absolute z-10 top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-accent/[0.015] blur-[120px]" />
-        <div className="absolute z-10 top-[40%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-accent/[0.01] blur-[120px]" />
-        <div className="absolute z-10 bottom-[-10%] left-[20%] w-[60vw] h-[60vw] rounded-full bg-accent/[0.015] blur-[150px]" />
-      </div>
-
-      {/* Scrolling Vector Canvas */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <GlobalBackgroundPaths />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#0D0D12] via-[#0A0A0F] to-[#0D0D12]" />
+        {/* Soft radial zones */}
+        <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-accent/[0.015] blur-[120px]" />
+        <div className="absolute top-[40%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-accent/[0.01] blur-[120px]" />
+        <div className="absolute bottom-[-10%] left-[20%] w-[60vw] h-[60vw] rounded-full bg-accent/[0.015] blur-[150px]" />
       </div>
 
       {/* Global Noise Overlay */}
