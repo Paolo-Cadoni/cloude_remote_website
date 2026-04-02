@@ -1,87 +1,70 @@
-# React + TypeScript + Vite
+# Cloude Remote Website
 
-## Waitlist Setup
+This repository contains the marketing website for Cloude Remote.
 
-This project now includes a Supabase-powered waitlist form.
+## What Is In This Project
 
-1. Create a Supabase project.
-2. In the Supabase SQL editor, run [`supabase/waitlist.sql`](/Users/paolocadoni/Documents/Tech%20(local)/cloude_remote_website/supabase/waitlist.sql).
-3. Copy `.env.example` to `.env.local`.
-4. Add your Supabase project URL and public anon key to `.env.local`.
-5. Create a Resend account, verify a sender domain, and add `RESEND_API_KEY` plus `RESEND_FROM_EMAIL` as Supabase Edge Function secrets.
-6. Deploy the `supabase/functions/send-waitlist-thanks` Edge Function.
-7. Run `npm install` if needed, then `npm run dev`.
+- A React + Vite frontend for the public website
+- A waitlist form on the website
+- Supabase storage for waitlist signups
+- A Supabase Edge Function that sends confirmation emails through Resend
 
-Submitted emails will be stored in the `waitlist_signups` table inside Supabase.
+## Current Status
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The code on `main` builds successfully and passes linting.
 
-Currently, two official plugins are available:
+The waitlist experience only works fully when all of these are configured:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+1. Supabase project
+2. `waitlist_signups` table in Supabase
+3. Browser environment variables for Supabase
+4. Supabase Edge Function deployment
+5. Resend API key and sender email configured as Supabase secrets
 
-## React Compiler
+If any of those pieces are missing, the site can still load, but waitlist submissions or confirmation emails may not work.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Local Environment Variables
 
-## Expanding the ESLint configuration
+Create a `.env.local` file with:
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+VITE_SUPABASE_URL=https://your-project-id.supabase.co
+VITE_SUPABASE_ANON_KEY=your-public-anon-key
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Supabase Setup
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Run the SQL in [supabase/waitlist.sql](/Users/paolocadoni/Documents/Tech%20(local)/cloude_remote_website/supabase/waitlist.sql) inside the Supabase SQL editor.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+That script creates the `waitlist_signups` table and allows public website visitors to insert new rows.
+
+## Confirmation Email Setup
+
+Deploy the Edge Function in [supabase/functions/send-waitlist-thanks/index.ts](/Users/paolocadoni/Documents/Tech%20(local)/cloude_remote_website/supabase/functions/send-waitlist-thanks/index.ts).
+
+Add these secrets to the Supabase function environment:
+
+```bash
+RESEND_API_KEY=your-resend-api-key
+RESEND_FROM_EMAIL=Cloude Remote <your-verified-sender@yourdomain.com>
 ```
+
+If `RESEND_API_KEY` is missing or the sender email is not properly set up, signups can still be saved in Supabase but confirmation emails will fail.
+
+## Local Development
+
+```bash
+npm install
+npm run dev
+```
+
+## Production Check Before Launch
+
+Before sending real users to the site, verify:
+
+1. The website is deployed from `main`
+2. The live deployment has `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`
+3. The Supabase SQL has been run
+4. The `send-waitlist-thanks` Edge Function is deployed
+5. Supabase function secrets include `RESEND_API_KEY` and `RESEND_FROM_EMAIL`
+6. A real test signup stores the email and sends the confirmation message
