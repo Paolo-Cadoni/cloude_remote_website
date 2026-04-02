@@ -2,8 +2,21 @@ import React, { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Terminal, MousePointer2, ChevronRight, Server, CheckCircle2 } from 'lucide-react';
+import { hasSupabaseConfig, supabase } from './lib/supabase';
 
 gsap.registerPlugin(ScrollTrigger);
+
+const WAITLIST_SECTION_ID = 'waitlist';
+const SUPABASE_FUNCTION_URL = import.meta.env.VITE_SUPABASE_URL
+  ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-waitlist-thanks`
+  : null;
+
+const scrollToWaitlist = () => {
+  document.getElementById(WAITLIST_SECTION_ID)?.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start',
+  });
+};
 
 // --- Micro-Interaction Components ---
 
@@ -47,6 +60,159 @@ const MagneticButton = ({ children, className = '', primary = false, ...props }:
   );
 };
 
+const WaitlistForm = () => {
+  const [email, setEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [feedback, setFeedback] = useState<{ type: 'idle' | 'error' | 'success'; message: string }>({
+    type: 'idle',
+    message: '',
+  });
+  const formStartedAt = useRef(Date.now());
+  const honeypotRef = useRef<HTMLInputElement>(null);
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const elapsedMs = Date.now() - formStartedAt.current;
+    const honeypotValue = honeypotRef.current?.value.trim();
+
+    if (honeypotValue || elapsedMs < 1500) {
+      return;
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!normalizedEmail) {
+      setFeedback({ type: 'error', message: 'Please enter an email address.' });
+      return;
+    }
+
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(normalizedEmail)) {
+      setFeedback({ type: 'error', message: 'Please enter a valid email address.' });
+      return;
+    }
+
+    if (!supabase) {
+      setFeedback({
+        type: 'error',
+        message: 'Supabase is not configured yet. Add your project URL and anon key to .env.local.',
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    setFeedback({ type: 'idle', message: '' });
+
+    const { error } = await supabase.from('waitlist_signups').insert({
+      email: normalizedEmail,
+      source: 'website',
+    });
+
+    if (error) {
+      if (error.code === '23505') {
+        setFeedback({ type: 'success', message: "You're already on the list. We'll be in touch." });
+      } else {
+        setFeedback({
+          type: 'error',
+          message: 'Something went wrong while saving your email. Please try again in a moment.',
+        });
+      }
+
+      setIsSubmitting(false);
+      return;
+    }
+
+    setEmail('');
+
+    if (SUPABASE_FUNCTION_URL) {
+      try {
+        const emailResponse = await fetch(SUPABASE_FUNCTION_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email: normalizedEmail }),
+        });
+
+        if (emailResponse.ok) {
+          setFeedback({ type: 'success', message: 'You are on the list. Check your inbox for a confirmation email.' });
+        } else {
+          setFeedback({
+            type: 'success',
+            message: 'You are on the list. We saved your email, but the confirmation email is still being set up.',
+          });
+        }
+      } catch {
+        setFeedback({
+          type: 'success',
+          message: 'You are on the list. We saved your email, but the confirmation email could not be sent yet.',
+        });
+      }
+    } else {
+      setFeedback({
+        type: 'success',
+        message: 'You are on the list. We saved your email, and confirmation email setup is still pending.',
+      });
+    }
+
+    setIsSubmitting(false);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="w-full max-w-2xl mx-auto">
+      <div className="rounded-[2rem] border border-white/8 bg-white/[0.03] backdrop-blur-xl p-4 sm:p-5 shadow-[0_20px_60px_rgba(0,0,0,0.25)]">
+        <div className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden" aria-hidden="true">
+          <label htmlFor="waitlist-company">Company</label>
+          <input
+            ref={honeypotRef}
+            id="waitlist-company"
+            name="company"
+            type="text"
+            tabIndex={-1}
+            autoComplete="off"
+          />
+        </div>
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <label htmlFor="waitlist-email" className="sr-only">
+            Email address
+          </label>
+          <input
+            id="waitlist-email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            placeholder="Enter your email"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            className="min-h-14 flex-1 rounded-2xl border border-white/10 bg-black/30 px-5 text-sm text-text placeholder:text-text/35 outline-none transition focus:border-accent/50 focus:ring-2 focus:ring-accent/20"
+          />
+          <MagneticButton
+            primary
+            type="submit"
+            disabled={isSubmitting}
+            className="min-h-14 w-full sm:w-auto sm:min-w-[220px] disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {isSubmitting ? 'Joining...' : 'Join the waitlist'}
+          </MagneticButton>
+        </div>
+        <div className="mt-3 flex flex-col gap-2 px-1 text-left">
+          <p className="font-mono text-[11px] uppercase tracking-[0.24em] text-text/35">
+            {hasSupabaseConfig
+              ? 'Stored securely in Supabase'
+              : 'Add your Supabase keys to activate submissions'}
+          </p>
+          {feedback.type !== 'idle' && (
+            <p className={`text-sm ${feedback.type === 'success' ? 'text-emerald-300' : 'text-rose-300'}`}>
+              {feedback.message}
+            </p>
+          )}
+        </div>
+      </div>
+    </form>
+  );
+};
+
 // --- Page Sections ---
 
 const Navbar = () => {
@@ -75,7 +241,13 @@ const Navbar = () => {
       <div className="hidden md:flex items-center gap-6 font-sans text-[13px] font-medium tracking-wide text-text/70 translate-y-[0.5px]">
         <a href="#features" className="hover:text-text transition-all duration-300 transform hover:-translate-y-[1px]">Features</a>
       </div>
-      <MagneticButton primary className="!px-4 !py-1.5 !text-[13px] !rounded-xl !tracking-wide">Get early access</MagneticButton>
+      <MagneticButton
+        primary
+        onClick={scrollToWaitlist}
+        className="!px-4 !py-1.5 !text-[13px] !rounded-xl !tracking-wide"
+      >
+        Get early access
+      </MagneticButton>
     </nav>
   );
 };
@@ -137,10 +309,37 @@ const Hero = () => {
         </div>
 
         <div className="hero-elem mt-6 md:mt-10 flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-center justify-center">
-          <MagneticButton primary className="w-full sm:w-auto">Join the waitlist</MagneticButton>
+          <MagneticButton primary onClick={scrollToWaitlist} className="w-full sm:w-auto">
+            Join the waitlist
+          </MagneticButton>
           <MagneticButton className="w-full sm:w-auto group">
             <span className="opacity-80 group-hover:opacity-100 transition-opacity flex items-center gap-2">View on GitHub <ChevronRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5"/></span>
           </MagneticButton>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const WaitlistSection = () => {
+  return (
+    <section id={WAITLIST_SECTION_ID} className="px-6 pb-12 md:px-16">
+      <div className="mx-auto max-w-5xl rounded-[2.5rem] border border-white/8 bg-gradient-to-br from-white/[0.05] via-white/[0.025] to-transparent px-6 py-12 shadow-[0_30px_80px_rgba(0,0,0,0.28)] md:px-12 md:py-16">
+        <div className="mx-auto max-w-3xl text-center">
+          <p className="mb-4 font-mono text-[11px] uppercase tracking-[0.28em] text-accent/80">
+            Early Access
+          </p>
+          <h2 className="font-sans text-3xl font-bold tracking-tight text-text md:text-5xl">
+            Join the first wave of remote builders.
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-sm font-medium text-text/55 md:text-base">
+            Leave your email and we&apos;ll keep your place on the list for launch updates, private beta invites,
+            and rollout news.
+          </p>
+        </div>
+
+        <div className="mt-10">
+          <WaitlistForm />
         </div>
       </div>
     </section>
@@ -367,7 +566,9 @@ const Footer = () => {
 
       <div className="max-w-7xl mx-auto flex flex-col items-center mb-32 text-center">
         <h2 className="font-drama italic text-6xl md:text-8xl mb-8">Execute anywhere.</h2>
-        <MagneticButton primary className="px-12 py-6 text-lg tracking-widest scale-110">Get early access</MagneticButton>
+        <MagneticButton primary onClick={scrollToWaitlist} className="px-12 py-6 text-lg tracking-widest scale-110">
+          Get early access
+        </MagneticButton>
       </div>
       
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 border-t border-border/50 pt-10 mt-10">
@@ -423,6 +624,7 @@ function App() {
       <div className="relative z-20">
         <Navbar />
         <Hero />
+        <WaitlistSection />
         <Features />
         <Philosophy />
         <Footer />

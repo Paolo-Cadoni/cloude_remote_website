@@ -1,5 +1,19 @@
 # React + TypeScript + Vite
 
+## Waitlist Setup
+
+This project now includes a Supabase-powered waitlist form.
+
+1. Create a Supabase project.
+2. In the Supabase SQL editor, run [`supabase/waitlist.sql`](/Users/paolocadoni/Documents/Tech%20(local)/cloude_remote_website/supabase/waitlist.sql).
+3. Copy `.env.example` to `.env.local`.
+4. Add your Supabase project URL and public anon key to `.env.local`.
+5. Create a Resend account, verify a sender domain, and add `RESEND_API_KEY` plus `RESEND_FROM_EMAIL` as Supabase Edge Function secrets.
+6. Deploy the `supabase/functions/send-waitlist-thanks` Edge Function.
+7. Run `npm install` if needed, then `npm run dev`.
+
+Submitted emails will be stored in the `waitlist_signups` table inside Supabase.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:
