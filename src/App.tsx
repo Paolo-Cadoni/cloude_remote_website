@@ -10,6 +10,19 @@ const WAITLIST_SECTION_ID = 'waitlist';
 const SUPABASE_FUNCTION_URL = import.meta.env.VITE_SUPABASE_URL
   ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-waitlist-thanks`
   : null;
+const TELEMETRY_MESSAGES = [
+  'Establishing remote socket...',
+  'Agent connected to repo: cloude-ui',
+  '> npm run build',
+  'Compiled successfully in 432ms.',
+  'Awaiting new instructions...',
+] as const;
+
+type MagneticButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  children: React.ReactNode;
+  className?: string;
+  primary?: boolean;
+};
 
 const scrollToWaitlist = () => {
   document.getElementById(WAITLIST_SECTION_ID)?.scrollIntoView({
@@ -20,7 +33,12 @@ const scrollToWaitlist = () => {
 
 // --- Micro-Interaction Components ---
 
-const MagneticButton = ({ children, className = '', primary = false, ...props }: any) => {
+const MagneticButton = ({
+  children,
+  className = '',
+  primary = false,
+  ...props
+}: MagneticButtonProps) => {
   const buttonRef = useRef<HTMLButtonElement>(null);
 
   const handleMouseMove = (e: React.MouseEvent) => {
@@ -67,13 +85,17 @@ const WaitlistForm = () => {
     type: 'idle',
     message: '',
   });
-  const formStartedAt = useRef(Date.now());
+  const formStartedAt = useRef<number | null>(null);
   const honeypotRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    formStartedAt.current = Date.now();
+  }, []);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const elapsedMs = Date.now() - formStartedAt.current;
+    const elapsedMs = formStartedAt.current ? Date.now() - formStartedAt.current : Infinity;
     const honeypotValue = honeypotRef.current?.value.trim();
 
     if (honeypotValue || elapsedMs < 1500) {
@@ -397,19 +419,12 @@ const DiagnosticShufflerCard = () => {
 };
 
 const TelemetryTypewriterCard = () => {
-  const messages = [
-    "Establishing remote socket...",
-    "Agent connected to repo: cloude-ui",
-    "> npm run build",
-    "Compiled successfully in 432ms.",
-    "Awaiting new instructions..."
-  ];
   const [text, setText] = useState("");
   const [msgIdx, setMsgIdx] = useState(0);
 
   useEffect(() => {
     let charIdx = 0;
-    const currentMsg = messages[msgIdx];
+    const currentMsg = TELEMETRY_MESSAGES[msgIdx];
     setText("");
 
     const typing = setInterval(() => {
@@ -418,7 +433,7 @@ const TelemetryTypewriterCard = () => {
       if (charIdx === currentMsg.length) {
         clearInterval(typing);
         setTimeout(() => {
-          setMsgIdx((prev) => (prev + 1) % messages.length);
+          setMsgIdx((prev) => (prev + 1) % TELEMETRY_MESSAGES.length);
         }, 2000);
       }
     }, 50);
