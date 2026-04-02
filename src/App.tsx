@@ -126,21 +126,34 @@ const WaitlistForm = () => {
     setIsSubmitting(true);
     setFeedback({ type: 'idle', message: '' });
 
-    const { error } = await supabase.from('waitlist_signups').insert({
-      email: normalizedEmail,
-      source: 'website',
-    });
+    const { data, error } = await supabase
+      .from('waitlist_signups')
+      .upsert(
+        {
+          email: normalizedEmail,
+          source: 'website',
+        },
+        {
+          onConflict: 'email',
+          ignoreDuplicates: true,
+        },
+      )
+      .select('id');
 
     if (error) {
-      if (error.code === '23505') {
-        setFeedback({ type: 'success', message: "You're already on the list. We'll be in touch." });
-      } else {
-        setFeedback({
-          type: 'error',
-          message: 'Something went wrong while saving your email. Please try again in a moment.',
-        });
-      }
+      setFeedback({
+        type: 'error',
+        message: 'Something went wrong while saving your email. Please try again in a moment.',
+      });
 
+      setIsSubmitting(false);
+      return;
+    }
+
+    const isExistingSignup = !data || data.length === 0;
+
+    if (isExistingSignup) {
+      setFeedback({ type: 'success', message: "You're already on the list. We'll be in touch." });
       setIsSubmitting(false);
       return;
     }
